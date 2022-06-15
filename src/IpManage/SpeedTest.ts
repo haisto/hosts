@@ -1,6 +1,6 @@
 import net from "net";
 import unionBy from 'lodash.unionby'
-import {IDnsMap, DnsType} from "../dns";
+import {DnsType, IDnsMap} from "../dns";
 import {createLogger, disableLog} from "../log";
 
 const log = createLogger()
@@ -121,9 +121,10 @@ class SpeedTester {
   }
 
   public async test(cb?: Function) {
+    const startTime = Date.now();
     if (
       this.backupList.length === 0 ||
-      this.testCount < 10 ||
+      this.testCount < 100 ||
       this.testCount % 5 === 0
     ) {
       const newList = await this.getIpListFromDns(this.dnsMap);
@@ -131,11 +132,10 @@ class SpeedTester {
       this.backupList = unionBy(newBackupList, "host");
     }
     this.testCount++;
-
     log.info("结果：", this.hostname, " ips:", this.backupList);
     await this.testBackups();
-
-    cb?.()
+    const endTime = Date.now();
+    cb?.(this.hostname, startTime, endTime)
   }
 
   public async testBackups() {

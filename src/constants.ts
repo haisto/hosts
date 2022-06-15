@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const fs = require('fs')
+
 export const providers = {
   aliyun: {
     type: "https",
@@ -61,3 +64,23 @@ export const githubUrls = [
   'raw.github.com',
   'copilot-proxy.githubusercontent.com'
 ];
+
+export const hostPath = './hosts'
+export const fetchHostUrls = (): string[] => {
+  const urls: string[] = []
+  try {
+    // read contents of the file
+    const data = fs.readFileSync(hostPath, 'UTF-8');
+    // split the contents by new line
+    const lines = data.split(/\r?\n/);
+    // print all lines
+    lines.forEach((line: string) => {
+      if (line !== null && line.length > 0) {
+        urls.push(line)
+      }
+    });
+  } catch (err) {
+    console.error(err);
+  }
+  return [...githubUrls, ...urls]
+}

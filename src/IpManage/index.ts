@@ -1,6 +1,8 @@
 import SpeedTest from "./SpeedTest";
 import {IDnsMap, IDnsOption, initDNS} from "../dns";
-
+import {fetchHostUrls, hostPath} from "../constants";
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const fs = require('fs')
 const SpeedTestPool: { [key: string]: SpeedTest } = {};
 
 interface IIpManageOption {
@@ -23,35 +25,51 @@ interface IConfig {
 
 export default class IpManage {
   private config: IConfig
+  private updateUrlsId: any
+  private dnsQueryCallback: Function
 
   public constructor(option: IIpManageOption) {
     this.config = {
       ...option,
       dnsMap: initDNS(option.providers)
     }
+    this.dnsQueryCallback = (hostname: any, startTime: number, endTime: number) => {
+      console.log(`查询${hostname}，耗时：${endTime - startTime}ms`)
+    }
 
     this.initSpeedTest()
   }
 
   public initSpeedTest() {
-    let countArr = []
-    const afterCb = () => {
-      countArr.push(1)
-
-      if (countArr.length === this.config.hostList.length) {
-        this.config.callback?.()
-      }
+    this.startTest()
+    if (this.updateUrlsId) {
+      clearInterval(this.updateUrlsId);
     }
-
-    this.config.hostList.forEach((hostname: string) => {
-      SpeedTestPool[hostname] = new SpeedTest({
-        hostname,
-        dnsMap: this.config.dnsMap,
-        interval: this.config.interval,
-        silent: this.config.silent
-      });
-
-      SpeedTestPool[hostname].test(afterCb)
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const it = this
+    fs.watchFile(hostPath, (cur: { mtime: any; }, prv: { mtime: any; }) => {
+      if (cur.mtime !== prv.mtime) {
+        const hosts = fetchHostUrls()
+        it.config.hostList = hosts
+        for (const key in SpeedTestPool) {
+          if (Object.prototype.hasOwnProperty.call(SpeedTestPool, key)) {
+            if (!hosts.includes(key)) {
+              delete SpeedTestPool[key]
+            }
+          }
+        }
+        this.config.hostList.forEach((hostname: string) => {
+          if (!SpeedTestPool[hostname]?.alive) {
+            SpeedTestPool[hostname] = new SpeedTest({
+              hostname,
+              dnsMap: this.config.dnsMap,
+              interval: this.config.interval,
+              silent: this.config.silent
+            });
+            SpeedTestPool[hostname].test(this.dnsQueryCallback)
+          }
+        })
+      }
     })
   }
 
@@ -90,8 +108,29 @@ export default class IpManage {
   public reSpeedTest() {
     for (const key in SpeedTestPool) {
       if (Object.prototype.hasOwnProperty.call(SpeedTestPool, key)) {
-        SpeedTestPool[key].test();
+        SpeedTestPool[key].test(this.dnsQueryCallback);
       }
     }
+  }
+
+  public startTest() {
+    let countArr = []
+    const afterCb = (hostname: any, startTime: number, endTime: number) => {
+      countArr.push(1)
+      if (countArr.length === this.config.hostList.length) {
+        this.config.callback?.()
+      }
+      console.log(`查询${hostname}，耗时：${endTime - startTime}ms`)
+    }
+    this.config.hostList.forEach((hostname: string) => {
+      SpeedTestPool[hostname] = new SpeedTest({
+        hostname,
+        dnsMap: this.config.dnsMap,
+        interval: this.config.interval,
+        silent: this.config.silent
+      });
+
+      SpeedTestPool[hostname].test(afterCb)
+    })
   }
 }

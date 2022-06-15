@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import IpManage from "./IpManage";
-import {githubUrls, providers} from './constants';
+import {fetchHostUrls, providers} from './constants';
 import {buildHosts} from "./utils";
 
 dayjs.extend(utc);
@@ -162,13 +162,13 @@ export interface HostData {
 
 export async function updateHosts() {
   let result: HostData[] = [];
-
-  for (let i = 0; i < githubUrls.length; i++) {
-    console.log(`${i + 1}/${githubUrls.length}:${githubUrls[i]}`);
-    const ips = await findIpWrapper(githubUrls[i]);
+  const urls = fetchHostUrls()
+  for (let i = 0; i < urls.length; i++) {
+    console.log(`${i + 1}/${urls.length}:${urls[i]}`);
+    const ips = await findIpWrapper(urls[i]);
 
     result.push({
-      name: githubUrls[i],
+      name: urls[i],
       ip: ips.map(item => {
         return {
           host: item
@@ -195,8 +195,8 @@ async function saveHosts(hostData: HostData[], config: UpdateConfig) {
 
 const speedConfig = {
   interval: 0,
-  hostList: githubUrls,
-  dnsProviders: ["usa", "quad9", "iqDNS-tls", 'iqDNS'],
+  hostList: fetchHostUrls(),
+  dnsProviders: ["aliyun", "usa", "quad9", "iqDNS-tls", 'iqDNS'],
   providers,
 }
 

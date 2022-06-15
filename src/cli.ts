@@ -3,7 +3,7 @@ import parser from "yargs-parser";
 import chalk from "chalk";
 import portfinder from 'portfinder';
 import IpManage from "./IpManage";
-import {githubUrls, providers} from "./constants";
+import {fetchHostUrls, providers} from "./constants";
 import {HostData} from "./hosts";
 import {buildHosts} from "./utils";
 
@@ -14,8 +14,8 @@ const argv = parser(process.argv.slice(2));
 
 const speedConfig = {
   interval: 10 * 60 * 1000,
-  hostList: githubUrls,
-  dnsProviders: ["usa", "quad9", "iqDNS-tls", 'iqDNS'],
+  hostList: fetchHostUrls(),
+  dnsProviders: ["aliyun", "usa", "quad9", "iqDNS-tls", 'iqDNS'],
   providers,
 };
 
@@ -28,7 +28,6 @@ let ipManage: IpManage;
     const {interval, debug, port = defaultPort} = argv;
 
     await createServer({port});
-
     ipManage = new IpManage({
       ...speedConfig,
       silent: !debug,
@@ -66,7 +65,6 @@ async function createServer({port}: { port: number }) {
   }).listen(foundPort);
 
   const localUrl = `http://localhost:${foundPort}`;
-
   console.log();
   console.log(
     [
