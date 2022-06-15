@@ -124,7 +124,7 @@ class SpeedTester {
     const startTime = Date.now();
     if (
       this.backupList.length === 0 ||
-      this.testCount < 100 ||
+      this.testCount < 10 ||
       this.testCount % 5 === 0
     ) {
       const newList = await this.getIpListFromDns(this.dnsMap);
