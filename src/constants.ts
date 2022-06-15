@@ -66,7 +66,7 @@ export const githubUrls = [
   'copilot-proxy.githubusercontent.com'
 ];
 
-export const hostPath = './hosts'
+export const hostPath = 'hosts'
 export const fetchHostUrls = (): string[] => {
   const urls: string[] = []
   try {

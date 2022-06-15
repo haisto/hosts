@@ -1,7 +1,7 @@
 import net from "net";
 import unionBy from 'lodash.unionby'
 import {DnsType, IDnsMap} from "../dns";
-import {createLogger, disableLog} from "../log";
+import {createLogger, disableLog} from "../logger";
 
 const log = createLogger()
 
@@ -120,22 +120,35 @@ class SpeedTester {
     return await dns._lookup(this.hostname);
   }
 
+  public sleep(ms: any) {
+    // eslint-disable-next-line no-promise-executor-return
+    return new Promise(resolve => setTimeout(resolve, ms))
+  }
+
   public async test(cb?: Function) {
     const startTime = Date.now();
-    if (
-      this.backupList.length === 0 ||
-      this.testCount < 10 ||
-      this.testCount % 5 === 0
-    ) {
-      const newList = await this.getIpListFromDns(this.dnsMap);
-      const newBackupList = [...newList, ...this.backupList];
-      this.backupList = unionBy(newBackupList, "host");
+    for (let i = 0; i < 100000; i++) {
+      if (
+        this.backupList.length === 0 ||
+        this.testCount < 10 ||
+        this.testCount % 5 === 0
+      ) {
+        const newList = await this.getIpListFromDns(this.dnsMap);
+        const newBackupList = [...newList, ...this.backupList];
+        this.backupList = unionBy(newBackupList, "host");
+      }
+      this.testCount++;
+      log.debug("结果：", this.hostname, " ips:", this.backupList);
+      await this.testBackups();
+      if (this.alive.length > 0) {
+        break;
+      }
+      await this.sleep(1000);
     }
-    this.testCount++;
-    log.info("结果：", this.hostname, " ips:", this.backupList);
-    await this.testBackups();
     const endTime = Date.now();
-    cb?.(this.hostname, startTime, endTime)
+    if (this.alive.length > 0) {
+      cb?.(this.hostname, startTime, endTime)
+    }
   }
 
   public async testBackups() {

@@ -11,7 +11,9 @@
     "make": "ts-node ./src/index.ts --type=default",
     "make:next": "ts-node ./src/index.ts --type=next",
     "pkg:mac": "pkg . -t node14-mac-x64 -o app-mac",
-    "pkg:win": "pkg . -t node14-win-x64 -o app-win"
+    "pkg:win": "pkg . -t node14-win-x64 -o app-win",
+    "pkg:arm64": "pkg . -t node14-linuxstatic-arm64 -o app-arm64",
+    "pkg:linux:x64": "pkg . -t node14-linuxstatic-x64 -o app-linux-x64"
   },
   "author": "ineo6",
   "license": "MIT",
@@ -28,6 +30,7 @@
     "lru-cache": "^7.8.1",
     "node-fetch": "^2.6.1",
     "portfinder": "^1.0.28",
+    "winston": "^3.7.2",
     "yargs-parser": "^21.0.1"
   },
   "devDependencies": {

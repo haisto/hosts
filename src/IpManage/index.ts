@@ -1,6 +1,8 @@
 import SpeedTest from "./SpeedTest";
 import {IDnsMap, IDnsOption, initDNS} from "../dns";
 import {fetchHostUrls, hostPath} from "../constants";
+import {createLogger} from "../logger";
+import {Logger} from "winston";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const fs = require('fs')
 const SpeedTestPool: { [key: string]: SpeedTest } = {};
@@ -27,14 +29,16 @@ export default class IpManage {
   private config: IConfig
   private updateUrlsId: any
   private dnsQueryCallback: Function
+  private log: Logger
 
   public constructor(option: IIpManageOption) {
+    this.log = createLogger(option.silent)
     this.config = {
       ...option,
-      dnsMap: initDNS(option.providers)
+      dnsMap: initDNS(this.log, option.providers)
     }
     this.dnsQueryCallback = (hostname: any, startTime: number, endTime: number) => {
-      console.log(`查询${hostname}，耗时：${endTime - startTime}ms`)
+      this.log.debug(`查询${hostname}，耗时：${endTime - startTime}ms`)
     }
 
     this.initSpeedTest()
@@ -120,7 +124,7 @@ export default class IpManage {
       if (countArr.length === this.config.hostList.length) {
         this.config.callback?.()
       }
-      console.log(`查询${hostname}，耗时：${endTime - startTime}ms`)
+      this.log.debug(`查询${hostname}，耗时：${endTime - startTime}ms`)
     }
     this.config.hostList.forEach((hostname: string) => {
       SpeedTestPool[hostname] = new SpeedTest({

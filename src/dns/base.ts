@@ -1,9 +1,7 @@
 // @ts-ignore
 import LRU from 'lru-cache';
 import {DynamicChoice} from './choice';
-import {createLogger} from "../log";
-
-const log = createLogger()
+import {Logger} from "winston";
 
 const cacheSize = 1024;
 
@@ -28,16 +26,17 @@ class IpCache extends DynamicChoice {
 export default abstract class BaseDNS {
   public dnsServer: string;
 
-  protected log = log;
+  protected log: Logger;
 
   private cache: any;
 
-  public constructor(dnsServer: string) {
+  public constructor(log: Logger, dnsServer: string) {
     this.cache = new LRU({
       maxSize: cacheSize
     });
 
     this.dnsServer = dnsServer;
+    this.log = log;
   }
 
   public async lookup(hostName: any) {
@@ -61,13 +60,13 @@ export default abstract class BaseDNS {
       ipList.push(hostName); // 把原域名加入到统计里去
 
       ipCache.setBackupList(ipList);
-      this.log.info(
-        `[dns counter]:${hostName}`,
+      this.log.debug(
+        `[dns counter]:${hostName} %s %s %s`,
         ipCache.value,
         ipList,
         JSON.stringify(ipCache)
       );
-      this.log.info(`[DNS] ${hostName} -> ${ipCache.value}`);
+      this.log.debug(`[DNS] ${hostName} -> ${ipCache.value}`);
 
       return ipCache.value;
     } catch (error) {

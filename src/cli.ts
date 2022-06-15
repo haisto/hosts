@@ -42,7 +42,6 @@ let ipManage: IpManage;
 
 function getHosts() {
   const result = ipManage.getAllSpeedTester();
-
   const newHosts: HostData[] = [];
 
   result.forEach(item => {
@@ -63,7 +62,6 @@ async function createServer({port}: { port: number }) {
 
     response.end(getHosts());
   }).listen(foundPort);
-
   const localUrl = `http://localhost:${foundPort}`;
   console.log();
   console.log(

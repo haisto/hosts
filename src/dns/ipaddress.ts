@@ -13,7 +13,7 @@ export default class DNSOverIpAddress extends BaseDNS {
       headers: headers
     });
     if (res.status !== 200 && res.status !== 201) {
-      this.log.info(`[dns] get ${hostName} ipaddress: error:${res}`);
+      this.log.debug(`[dns] get ${hostName} ipaddress: error:${res}`);
       return;
     }
     const ret = await res.text();
@@ -24,10 +24,10 @@ export default class DNSOverIpAddress extends BaseDNS {
 
     if (matched && matched.length >= 1) {
       ip = matched[1];
-      this.log.info(`[dns] get ${hostName} ipaddress:${ip}`);
+      this.log.debug(`[dns] get ${hostName} ipaddress:${ip}`);
       return [ip];
     }
-    this.log.info(`[dns] get ${hostName} ipaddress: error`);
+    this.log.debug(`[dns] get ${hostName} ipaddress: error`);
     return null;
   }
 }
