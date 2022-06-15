@@ -1,6 +1,6 @@
 {
   "name": "hosts-server",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "GitHub最新hosts文件",
   "main": "src/index.ts",
   "bin": {
