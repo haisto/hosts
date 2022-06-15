@@ -2,11 +2,6 @@
 const fs = require('fs')
 
 export const providers = {
-  aliyun: {
-    type: "https",
-    server: "https://dns.alidns.com/dns-query",
-    cacheSize: 1e3
-  },
   usa: {
     type: "https",
     server: "https://1.1.1.1/dns-query",
@@ -26,7 +21,12 @@ export const providers = {
     type: 'https',
     server: 'https://i.passcloud.xyz/dns-query',
     cacheSize: 1e3
-  }
+  },
+  OpenDns: {
+    type: "https",
+    server: "https://doh.opendns.com/dns-query",
+    cacheSize: 1e3
+  },
 }
 
 export const githubUrls = [
@@ -52,6 +52,7 @@ export const githubUrls = [
   'avatars0.githubusercontent.com',
   'avatars.githubusercontent.com',
   'codeload.github.com',
+  'pages.github.com',
   'github-cloud.s3.amazonaws.com',
   'github-com.s3.amazonaws.com',
   'github-production-release-asset-2e65be.s3.amazonaws.com',

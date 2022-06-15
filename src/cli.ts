@@ -15,7 +15,7 @@ const argv = parser(process.argv.slice(2));
 const speedConfig = {
   interval: 10 * 60 * 1000,
   hostList: fetchHostUrls(),
-  dnsProviders: ["aliyun", "usa", "quad9", "iqDNS-tls", 'iqDNS'],
+  dnsProviders: ["usa", "quad9", "iqDNS-tls", 'iqDNS', 'OpenDns'],
   providers,
 };
 
