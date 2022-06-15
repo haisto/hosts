@@ -24,8 +24,7 @@ export function disableLog() {
 }
 
 export function createLogger(silent?: Boolean) {
-  console.log(silent)
-  if (silent === false || silent === null) {
+  if (silent || silent === null) {
     disableLog();
   }
   return logger;
