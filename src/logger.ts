@@ -26,7 +26,7 @@ export function disableLog() {
 export const log = logger;
 
 export const setLogLevel = (silent?: string) => {
-  if (silent === undefined || silent.length <= 0) {
+  if ((silent === undefined || silent.length <= 0) && silent !== 'true') {
     logger.level = 'none';
     console.log("Logger level: none")
   } else {
