@@ -1,6 +1,5 @@
 import DNSOverHTTPS from './https';
 import DNSOverIpAddress from './ipaddress';
-import {Logger} from "winston";
 
 interface IProvider {
   type: string;
@@ -18,7 +17,7 @@ export interface IDnsMap {
   [key: string]: DnsType
 }
 
-export function initDNS(log: Logger, dnsProviders: IDnsOption) {
+export function initDNS(dnsProviders: IDnsOption) {
   const dnsMap: IDnsMap = {};
 
   for (const key in dnsProviders) {
@@ -26,9 +25,9 @@ export function initDNS(log: Logger, dnsProviders: IDnsOption) {
       const conf = dnsProviders[key];
 
       if (conf.type === 'ipaddress') {
-        dnsMap[key] = new DNSOverIpAddress(log, conf.server);
+        dnsMap[key] = new DNSOverIpAddress(conf.server);
       } else if (conf.type === 'https') {
-        dnsMap[key] = new DNSOverHTTPS(log, conf.server);
+        dnsMap[key] = new DNSOverHTTPS(conf.server);
       }
     }
   }

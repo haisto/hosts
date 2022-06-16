@@ -6,6 +6,7 @@ import IpManage from "./IpManage";
 import {fetchHostUrls, providers} from "./constants";
 import {HostData} from "./hosts";
 import {buildHosts} from "./utils";
+import {setLogLevel} from "./logger";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pkg = require('../package.json');
@@ -26,11 +27,11 @@ let ipManage: IpManage;
 (async () => {
   try {
     const {interval, debug, port = defaultPort} = argv;
-
+    setLogLevel(debug)
     await createServer({port});
     ipManage = new IpManage({
       ...speedConfig,
-      silent: !debug,
+      silent: debug,
       interval: interval >= 0 ? interval * 1000 : speedConfig.interval
     });
   } catch (e) {

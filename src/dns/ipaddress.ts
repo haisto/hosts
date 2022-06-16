@@ -7,27 +7,30 @@ const headers = {
 
 export default class DNSOverIpAddress extends BaseDNS {
   public async _lookup(hostName: string) {
-    const url = `https://${hostName}.ipaddress.com`;
+    try {
+      const url = `https://${hostName}.ipaddress.com`;
 
-    const res = await fetch(url, {
-      headers: headers
-    });
-    if (res.status !== 200 && res.status !== 201) {
-      this.log.debug(`[dns] get ${hostName} ipaddress: error:${res}`);
-      return;
+      const res = await fetch(url, {
+        headers: headers
+      });
+      if (res.status !== 200 && res.status !== 201) {
+        // this.log.debug(`[dns] get ${hostName} ipaddress: error:${res}`);
+        return;
+      }
+      const ret = await res.text();
+
+      const regexp = /<tr><th>IP Address<\/th><td><ul class="comma-separated"><li>([^<]*)<\/li><\/ul><\/td><\/tr>/gm;
+      const matched = regexp.exec(ret);
+      let ip = null;
+
+      if (matched && matched.length >= 1) {
+        ip = matched[1];
+        // this.log.debug(`[dns] get ${hostName} ipaddress:${ip}`);
+        return [ip];
+      }
+      // this.log.debug(`[dns] get ${hostName} ipaddress: error`);
+    } catch (e) {
     }
-    const ret = await res.text();
-
-    const regexp = /<tr><th>IP Address<\/th><td><ul class="comma-separated"><li>([^<]*)<\/li><\/ul><\/td><\/tr>/gm;
-    const matched = regexp.exec(ret);
-    let ip = null;
-
-    if (matched && matched.length >= 1) {
-      ip = matched[1];
-      this.log.debug(`[dns] get ${hostName} ipaddress:${ip}`);
-      return [ip];
-    }
-    this.log.debug(`[dns] get ${hostName} ipaddress: error`);
     return null;
   }
 }

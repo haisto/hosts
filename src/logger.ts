@@ -5,7 +5,7 @@ const winston = require('winston');
 const format = winston.format
 const transports = winston.transports
 const logger = winston.createLogger({
-  level: 'info',
+  level: 'none',
   format: format.combine(
     format.splat(),
     format.timestamp({format: "YYYY-MM-dd HH:mm:ss"}),
@@ -23,9 +23,15 @@ export function disableLog() {
   logger.level = 'none';
 }
 
-export function createLogger(silent?: Boolean) {
-  if (silent || silent === null) {
-    disableLog();
+export const log = logger;
+
+export const setLogLevel = (silent?: string) => {
+  if (silent === undefined || silent.length <= 0) {
+    logger.level = 'none';
+    console.log("Logger level: none")
+  } else {
+    logger.level = silent
+    console.log("Logger level: " + logger.level)
   }
-  return logger;
+  console.log(silent, logger.level)
 }

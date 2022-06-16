@@ -27,6 +27,11 @@ export const providers = {
     server: "https://doh.opendns.com/dns-query",
     cacheSize: 1e3
   },
+  IPAdress: {
+    type: "ipaddress",
+    server: "https://doh.opendns.com/dns-query",
+    cacheSize: 1e3
+  },
 }
 
 export const githubUrls = [

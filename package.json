@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "run": "ts-node ./src/cli.ts --debug=debug --interval=10",
     "make": "ts-node ./src/index.ts --type=default",
     "make:next": "ts-node ./src/index.ts --type=next",
     "pkg:mac": "pkg . -t node14-mac-x64 -o app-mac",

@@ -1,9 +1,8 @@
 import net from "net";
 import unionBy from 'lodash.unionby'
 import {DnsType, IDnsMap} from "../dns";
-import {createLogger, disableLog} from "../logger";
+import {log} from "../logger";
 
-const log = createLogger()
 
 interface IAlive {
   time: number;
@@ -21,7 +20,7 @@ interface ISpeedTester {
   interval: number;
   dnsMap: IDnsMap;
   cb?: Function;
-  silent?: Boolean;
+  silent?: string;
 }
 
 class SpeedTester {
@@ -35,7 +34,8 @@ class SpeedTester {
   private testCount: number;
   private keepCheckId: any;
   private readonly interval: number;
-  private readonly silent: Boolean | undefined;
+  private readonly silent: string | undefined;
+  private lastIntervalState: boolean;
 
   public constructor({hostname, dnsMap, interval, silent}: ISpeedTester) {
     this.dnsMap = dnsMap;
@@ -45,6 +45,7 @@ class SpeedTester {
     this.alive = [];
     this.backupList = [];
     this.keepCheckId = false;
+    this.lastIntervalState = false;
 
     this.testCount = 0;
     this.interval = interval;
@@ -54,9 +55,6 @@ class SpeedTester {
       this.touch()
     }
 
-    if (silent) {
-      disableLog()
-    }
   }
 
   public getFastIp() {
@@ -126,29 +124,37 @@ class SpeedTester {
   }
 
   public async test(cb?: Function) {
+    if (this.lastIntervalState) {
+      log.warn("跳过创建新的任务：%s", this.hostname);
+      return;
+    }
+    this.lastIntervalState = true;
+    const size = 100000;
     const startTime = Date.now();
-    for (let i = 0; i < 100000; i++) {
+    for (let i = 0; i < size; i++) {
       if (
         this.backupList.length === 0 ||
         this.testCount < 10 ||
         this.testCount % 5 === 0
       ) {
+        log.debug("[%s/%s] 正在查询DNS：%s", i + 1, size, this.hostname);
         const newList = await this.getIpListFromDns(this.dnsMap);
         const newBackupList = [...newList, ...this.backupList];
         this.backupList = unionBy(newBackupList, "host");
       }
       this.testCount++;
-      log.debug("结果：", this.hostname, " ips:", this.backupList);
       await this.testBackups();
       if (this.alive.length > 0) {
+        const endTime = Date.now();
+        log.debug("[%s/%s] 查询成功[%s]，本次耗时：%sms", i + 1, size, this.hostname, endTime - startTime);
         break;
       }
-      await this.sleep(1000);
     }
     const endTime = Date.now();
     if (this.alive.length > 0) {
       cb?.(this.hostname, startTime, endTime)
     }
+    this.lastIntervalState = false;
   }
 
   public async testBackups() {
@@ -170,12 +176,12 @@ class SpeedTester {
       aliveList.sort((a, b) => a.time - b.time);
       this.backupList.sort((a, b) => a.time - b.time);
     } catch (e) {
-      log.info("Speed test error", this.hostname, item.host, e.message);
+      // log.error("Speed test error %s %s %s", this.hostname, item.host, e.message);
     }
   }
 
   public testOne(item: any): Promise<Omit<IAlive, "host">> {
-    const timeout = 5000;
+    const timeout = 60000;
     const {host, port} = item;
     const startTime = Date.now();
     let isOver = false;
@@ -193,7 +199,7 @@ class SpeedTester {
       client.on("end", () => {
       });
       client.on("error", error => {
-        log.error("Speed test error", this.hostname, host, error.message);
+        // log.error("测试速度错误 %s %s %s", this.hostname, host, error.message);
         isOver = true;
         timeoutId && clearTimeout(timeoutId);
         reject(error);
@@ -203,7 +209,7 @@ class SpeedTester {
         if (isOver) {
           return;
         }
-        log.error("Speed test timeout", this.hostname, host);
+        // log.error("连接超时 % %s", this.hostname, host);
         reject(new Error("timeout"));
         client.end();
       }, timeout);

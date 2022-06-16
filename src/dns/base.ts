@@ -2,6 +2,7 @@
 import LRU from 'lru-cache';
 import {DynamicChoice} from './choice';
 import {Logger} from "winston";
+import {log} from "../logger";
 
 const cacheSize = 1024;
 
@@ -30,7 +31,7 @@ export default abstract class BaseDNS {
 
   private cache: any;
 
-  public constructor(log: Logger, dnsServer: string) {
+  public constructor(dnsServer: string) {
     this.cache = new LRU({
       maxSize: cacheSize
     });
