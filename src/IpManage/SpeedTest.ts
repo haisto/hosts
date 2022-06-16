@@ -7,6 +7,7 @@ import {log} from "../logger";
 interface IAlive {
   time: number;
   host: string;
+  timestamp: number;
   status: string;
 }
 
@@ -193,7 +194,7 @@ class SpeedTester {
         const connectionTime = Date.now();
         isOver = true;
         timeoutId && clearTimeout(timeoutId);
-        resolve({status: "success", time: connectionTime - startTime});
+        resolve({status: "success", time: connectionTime - startTime, timestamp: Date.now()});
         client.end();
       });
       client.on("end", () => {
